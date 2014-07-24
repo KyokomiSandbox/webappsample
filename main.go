@@ -52,6 +52,19 @@ func doLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func doCount(w http.ResponseWriter, r *http.Request) {
+	sess := globalSessions.SessionStart(w, r)
+	ct := sess.Get("countnum")
+	if ct == nil {
+		sess.Set("countnum", 1)
+	} else {
+		sess.Set("countnum", (ct.(int) + 1))
+	}
+	t, _ := template.ParseFiles("templates/count.tmpl.html")
+	w.Header().Set("Content-Type", "text/html")
+	t.Execute(w, sess.Get("countnum"))
+}
+
 func doSayHelloName(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	fmt.Println(r.Form)
@@ -68,6 +81,7 @@ func doSayHelloName(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/", doSayHelloName)
 	http.HandleFunc("/login", doLogin)
+	http.HandleFunc("/count", doCount)
 	err := http.ListenAndServe(":9090", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
